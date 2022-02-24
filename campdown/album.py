@@ -40,6 +40,7 @@ class Album:
         # Basic information used when writing tracks.
         self.title = None
         self.artist = None
+        self.year = None
 
         # Extra URLs to make further requests easier.
         self.base_url = None
@@ -140,13 +141,20 @@ class Album:
                 if not self.silent:
                     print("\nFailed to prepare the band/artist title")
 
+        # Get the year of the album
+        if not self.year:
+            description = html.unescape(string_between(
+                self.content, '<meta name="description" content="', '">')).strip()
+            date = " ".join(description.split(" released ")[1].split(" ")[:3])
+            self.year = date.split(" ")[-1][:4].strip()
+
         # Make the album name safe for file writing.
         self.title = safe_filename(self.title)
         self.artist = safe_filename(self.artist)
 
         # Setup the correct output directory name.
         self.output = os.path.join(
-            self.output, self.artist + " - " + self.title, "")
+            self.output, self.artist, self.year + " - " + self.title, "")
 
         # Retrieve the base page URL.
         self.base_url = "{}//{}".format(str(self.url).split("/")[
